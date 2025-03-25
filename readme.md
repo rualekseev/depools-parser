@@ -1,10 +1,8 @@
 ```
 source .venv/bin/activate
-python3 main.py
+python3 depool.py
+python3 stdepool.py
 ```
 
-see data.csv result to analize
-
-
-(!) don't work with stever depools now
+see depool.csv and stdepool.csv results to analize
 
