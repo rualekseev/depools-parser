@@ -69,8 +69,7 @@ class Depool:
     def total_staked(self) -> nt.Tokens:
         participants = self.participants()
         balance = nt.Tokens(0)
-        for participant_address in participants:
-            participant = self.participant_info(participant_address)
+        for participant in participants:
             balance += participant.total_stake
         
         return balance
@@ -78,8 +77,7 @@ class Depool:
     def even_total_staked(self) -> nt.Tokens:
         participants = self.participants()
         balance = nt.Tokens(0)
-        for participant_address in participants:
-            participant = self.participant_info(participant_address)
+        for participant in participants:
             balance += participant.even_stake + participant.even_lock_stake + participant.even_vesting_stake 
         
         return balance
@@ -87,16 +85,20 @@ class Depool:
     def odd_total_staked(self) -> nt.Tokens:
         participants = self.participants()
         balance = nt.Tokens(0)
-        for participant_address in participants:
-            participant = self.participant_info(participant_address)
+        for participant in participants:
             balance += participant.odd_stake + participant.odd_lock_stake + participant.odd_vesting_stake 
         
         return balance
 
     
-    def participants(self) ->  List[nt.Address]:
-        return DePoolAbi.get_participants().with_args({}).call(self.state).output['participants']
+    def participants(self) ->  List[Participant]:
+        addresses = DePoolAbi.get_participants().with_args({}).call(self.state).output['participants']
         
+        result = []
+        for address in addresses:
+            result.append(self.participant_info(address))
+        return result
+
 
     def participant_info(self, address: nt.Address) ->  Participant:
         stake = nt.Tokens.from_nano(DePoolAbi.get_participant_info().with_args({"addr":address}).call(self.state).output['total'])
@@ -135,8 +137,7 @@ class Depool:
         lock_donor = nt.Address('0:eabd38806e244f941f0611aef85d8ab06dd9289cb2495153e9561153c08dc4d5')
 
         participants = self.participants()
-        for participant_address in participants:
-            participant = self.participant_info(participant_address)
+        for participant in participants:
             if participant.lock_donor == lock_donor:
                 return True
         
@@ -146,8 +147,7 @@ class Depool:
         empty_lock_donor = nt.Address('0:0000000000000000000000000000000000000000000000000000000000000000')
 
         participants = self.participants()
-        for participant_address in participants:
-            participant = self.participant_info(participant_address)
+        for participant in participants:
             if participant.lock_donor != empty_lock_donor:
                 return True
         
@@ -157,8 +157,7 @@ class Depool:
         empty_vesting_donor = nt.Address('0:0000000000000000000000000000000000000000000000000000000000000000')
 
         participants = self.participants()
-        for participant_address in participants:
-            participant = self.participant_info(participant_address)
+        for participant in participants:
             if participant.vesting_donor != empty_vesting_donor:
                 return True
         

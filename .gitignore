@@ -1,6 +1,9 @@
 data.csv
 stdepools.csv
 depools.csv
+participant.csv
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
