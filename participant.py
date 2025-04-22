@@ -13,22 +13,42 @@ filename = "participant.csv"
 
 class ParticipantInfo:
     total_stake: nt.Tokens
+    free_stake: nt.Tokens
+    lock_stake: nt.Tokens
+    vesting_stake: nt.Tokens
     code_hash: str
     stakes: dict
 
     def __init__(self):
         self.stakes = {}
         self.total_stake = nt.Tokens(0)
+        self.free_stake = nt.Tokens(0)
+        self.lock_stake = nt.Tokens(0)
+        self.vesting_stake = nt.Tokens(0)
 
     def add_stake(self, address: nt.Address, stake: nt.Tokens):
+        self.total_stake += stake
+
+    def add_free_stake(self, address: nt.Address, stake: nt.Tokens):
+        self.free_stake += stake
         if address in self.stakes.keys():
-            self.total_stake += stake
             self.stakes[address] += stake
         else:
-            self.total_stake = stake
             self.stakes[address] = stake
 
+    def add_vesting_stake(self, address: nt.Address, stake: nt.Tokens):
+        self.vesting_stake += stake
+        if address in self.stakes.keys():
+            self.stakes[address] += stake
+        else:
+            self.stakes[address] = stake
 
+    def add_lock_stake(self, address: nt.Address, stake: nt.Tokens):
+        self.lock_stake += stake
+        if address in self.stakes.keys():
+            self.stakes[address] += stake
+        else:
+            self.stakes[address] = stake
 
 
 async def main():
@@ -46,19 +66,29 @@ async def main():
         depool = Depool(depool, state)
 
         for participant in depool.participants():
+            participant_info = ParticipantInfo()
             if participant.address in participants.keys():
-                (participants[participant.address]).add_stake(depool.address, participant.total_stake)
+                participant_info = (participants[participant.address])
             else:
-                participant_info = ParticipantInfo()
-                participant_info.add_stake(depool.address, participant.total_stake)
                 participant_info.code_hash = await get_codehash(transport, participant.address)
-                participants[participant.address] = participant_info
+                participants[participant.address] = participant_info            
+            participant_info.add_stake(depool.address, participant.total_stake)
+            participant_info.add_free_stake(depool.address, participant.even_stake)
+            participant_info.add_free_stake(depool.address, participant.odd_stake)
+            participant_info.add_vesting_stake(depool.address, participant.even_vesting_stake)
+            participant_info.add_vesting_stake(depool.address, participant.odd_vesting_stake)
+            participant_info.add_lock_stake(depool.address, participant.even_lock_stake)
+            participant_info.add_lock_stake(depool.address, participant.odd_lock_stake)
+
     
     to_write = []
     for key, value in participants.items():
         to_write.append([
             key, 
             value.total_stake, 
+            value.free_stake, 
+            value.vesting_stake, 
+            value.lock_stake, 
             value.code_hash,
             len(value.stakes),
             value.stakes.keys()])
@@ -71,6 +101,9 @@ async def main():
         csvwriter.writerow([
             'address',
             'total_stake',
+            'free_stake',
+            'vesting_stake',
+            'lock_stake',
             'code_hash',
             'stake_count',
             'depools'

@@ -27,9 +27,20 @@ async def main():
             model.even_total_staked(), 
             model.odd_total_staked(), 
             len(model.participants()), 
-            model.is_rustcup_depool(),
             model.has_lock_stakes(),
             model.has_vesting_stakes(),
+            model.contains_rustcup_lock_donor(),
+            model.rustcup_lock_stake(),
+            model.contains_rustcup_vesting_donor(),
+            model.rustcup_vesting_stake(),
+            model.contains_extra_stake_lock_donor(),
+            model.extra_stake_lock_stake(),
+            model.contains_extra_stake_vesting_donor(),
+            model.extra_stake_vesting_stake(),
+            model.contains_mludi_lock_donor(),
+            model.mludi_lock_stake(),
+            model.contains_mludi_vesting_donor(),
+            model.mludi_vesting_stake()
               ])
 
 
@@ -39,14 +50,25 @@ async def main():
         # writing the fields
         csvwriter.writerow([
             'address',
-            'balance',
+            'native balance',
             'total_stake',
             'even total stake',
             'odd_total_stake',
             'participan_count',
-            'rust cup',
-            'has lock',
-            'has vestings'])
+            'has locks',
+            'has vestings',
+            'has rustcup lock',
+            'total rustcup lock stake',
+            'has rustcup vesting',
+            'total rustcup vesting stake',
+            'has extra stake lock',
+            'total extra lock stake',
+            'has extra stake vesting',
+            'total extra vesting stake',
+            'has M.Ludi lock',
+            'total M.Ludi lock stake',
+            'has M.Ludi vesting',
+            'total M.Ludi vesting stake'])
         # writing the data rows
         csvwriter.writerows(depool_info)
 
