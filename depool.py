@@ -20,6 +20,7 @@ async def main():
     for depool in depools:
         state = await  transport.get_account_state(depool)
         model = Depool(depool, state)
+        model.fill_round()
         depool_info.append([
             depool, 
             model.native_balance(), 
@@ -40,8 +41,19 @@ async def main():
             model.contains_mludi_lock_donor(),
             model.mludi_lock_stake(),
             model.contains_mludi_vesting_donor(),
-            model.mludi_vesting_stake()
-              ])
+            model.mludi_vesting_stake(),
+            model.round0.election_time,
+            model.round0.state,
+            model.round0.stake,
+            model.round1.election_time,
+            model.round1.state,
+            model.round1.stake,
+            model.round2.election_time,
+            model.round2.state,
+            model.round2.stake,
+            model.round3.election_time,
+            model.round3.state,
+            model.round3.stake])
 
 
     with open(filename, 'w') as csvfile:
@@ -68,7 +80,19 @@ async def main():
             'has M.Ludi lock',
             'total M.Ludi lock stake',
             'has M.Ludi vesting',
-            'total M.Ludi vesting stake'])
+            'total M.Ludi vesting stake',
+            'round0_election',
+            'round0_state',
+            'round0_stake',
+            'round1_election',
+            'round1_state',
+            'round1_stake',
+            'round2_election',
+            'round2_state',
+            'round2_stake',
+            'round3_election',
+            'round3_state',
+            'round3_stake'])
         # writing the data rows
         csvwriter.writerows(depool_info)
 

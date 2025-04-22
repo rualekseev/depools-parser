@@ -2,6 +2,17 @@ import nekoton as nt
 from typing import List, Tuple, TypedDict
 from src.abi.generated.depool import DePoolAbi
 
+class Round: 
+    election_time: int
+    #step
+    state: int
+    stake: nt.Tokens 
+
+    def __init__(self, e_time: int, state: int, stake: nt.Tokens):
+        self.election_time = e_time
+        self.state = state
+        self.stake = stake
+
 class Participant:
     address: nt.Address
     total_stake: nt.Tokens
@@ -68,6 +79,11 @@ class Depool:
     rustcup_donor: nt.Address
     extra_stake_donor: nt.Address
     mludi_donor: nt.Address
+
+    round0: Round
+    round1: Round
+    round2: Round
+    round3: Round
 
     def __init__(self, address: nt.Address, state: nt.AccountState):
         self.address = address
@@ -224,7 +240,16 @@ class Depool:
                 stake += participant.even_vesting_stake
                 stake += participant.odd_vesting_stake        
         return stake
-    
+
+    def fill_round(self) -> int:
+        rounds = DePoolAbi.get_rounds().with_args({}).call(self.state).output['rounds']
+
+        self.round0 = Round(rounds[0][1]['supposedElectedAt'], rounds[0][1]['step'], nt.Tokens(rounds[0][1]['stake']))
+        self.round1 = Round(rounds[1][1]['supposedElectedAt'], rounds[1][1]['step'], nt.Tokens(rounds[1][1]['stake']))
+        self.round2 = Round(rounds[2][1]['supposedElectedAt'], rounds[2][1]['step'], nt.Tokens(rounds[2][1]['stake']))
+        self.round3 = Round(rounds[3][1]['supposedElectedAt'], rounds[3][1]['step'], nt.Tokens(rounds[3][1]['stake']))
+
+
     async def reload_state(self, transport: nt.Transport):
         await transport.check_connection()
         self.state = await transport.get_account_state(self.address)
